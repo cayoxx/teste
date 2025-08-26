@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Jogo 0,0,7 - Seu Turno</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            background-color: #1a1a1a; 
+            color: #eee;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            margin-top: 20px;
+            color: #ffcc00;
+            text-shadow: 2px 2px 6px #000;
+        }
+        button { 
+            margin: 10px; 
+            padding: 15px 30px; 
+            font-size: 20px; 
+            cursor: pointer; 
+            border: none;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+        .btn-carregar { background: #e67e22; color: white; }
+        .btn-atirar { background: #c0392b; color: white; }
+        .btn-defender { background: #27ae60; color: white; }
+        .btn-hp { background: #3498db; color: white; }
+        #actionDisplay { 
+            margin-top: 40px; 
+            font-size: 56px; 
+            font-weight: bold; 
+            text-shadow: 2px 2px 8px #000;
+            transition: 0.3s;
+        }
+        #status { 
+            margin-top: 30px; 
+            font-size: 22px; 
+        }
+        #extraOptions {
+            margin-top: 20px;
+        }
+        /* Barra de HP */
+        .bar-container {
+            width: 60%;
+            height: 30px;
+            background: #555;
+            border-radius: 15px;
+            margin: 10px auto;
+            overflow: hidden;
+        }
+        .bar {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60, #2ecc71);
+            width: 100%;
+            transition: width 0.3s;
+        }
+        /* Barra de balas */
+        .bullets {
+            margin-top: 15px;
+        }
+        .bullet {
+            display: inline-block;
+            width: 20px;
+            height: 30px;
+            margin: 3px;
+            border-radius: 3px;
+            background: #888;
+        }
+        .bullet.full {
+            background: #f1c40f;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Jogo 0,0,7 - Seu Turno</h1>
+    <p>Escolha sua ação:</p>
+    <button class="btn-carregar" onclick="carregar()">Carregar Arma</button>
+    <button class="btn-atirar" onclick="atirar()">Atirar</button>
+    <button class="btn-defender" onclick="defender()">Defender</button>
+    <br><br>
+    <button class="btn-hp" onclick="perderHP(1)">Perder 1 HP</button>
+    <button class="btn-hp" onclick="perderHP(3)">Perder 3 HP</button>
+
+    <div id="extraOptions"></div>
+    <div id="actionDisplay"></div>
+
+    <h3>Seu HP:</h3>
+    <div class="bar-container">
+        <div id="hpBar" class="bar"></div>
+    </div>
+
+    <h3>Balas:</h3>
+    <div class="bullets" id="bulletDisplay"></div>
+
+    <div id="status"></div>
+
+    <script>
+        let playerHP = 3;
+        let bullets = 0;
+        let lastAction = "";
+
+        function atualizarStatus() {
+            // HP
+            let hpPercent = (playerHP / 3) * 100;
+            document.getElementById('hpBar').style.width = hpPercent + "%";
+            if (playerHP > 2) {
+                document.getElementById('hpBar').style.background = "linear-gradient(90deg, #27ae60, #2ecc71)";
+            } else if (playerHP > 1) {
+                document.getElementById('hpBar').style.background = "linear-gradient(90deg, #f39c12, #e67e22)";
+            } else {
+                document.getElementById('hpBar').style.background = "linear-gradient(90deg, #c0392b, #e74c3c)";
+            }
+
+            // Balas
+            let bulletHTML = "";
+            for (let i = 0; i < 3; i++) {
+                bulletHTML += `<div class="bullet ${i < bullets ? 'full' : ''}"></div>`;
+            }
+            document.getElementById('bulletDisplay').innerHTML = bulletHTML;
+
+            // Texto da ação
+            document.getElementById('actionDisplay').innerText = lastAction;
+        }
+
+        function carregar() {
+            if (bullets < 3) {
+                bullets++;
+                lastAction = "🔶 CARREGOU ARMA!";
+            } else {
+                lastAction = "⚡ 3 BALAS! Pode usar SUPER TIRO ou TIRO MÚLTIPLO!";
+            }
+            document.getElementById('extraOptions').innerHTML = "";
+            atualizarStatus();
+        }
+
+        function atirar() {
+            if (bullets > 0) {
+                if (bullets === 3) {
+                    document.getElementById('extraOptions').innerHTML = `
+                        <button class="btn-atirar" onclick="superTiro()">SUPER TIRO</button>
+                        <button class="btn-atirar" onclick="tiroMultiplo()">TIRO MÚLTIPLO</button>
+                    `;
+                    lastAction = "🔥 ESCOLHA: SUPER TIRO ou TIRO MÚLTIPLO";
+                } else {
+                    lastAction = "💥 ATIROU!";
+                    bullets--;
+                }
+            } else {
+                lastAction = "❌ SEM BALAS!";
+            }
+            atualizarStatus();
+        }
+
+        function superTiro() {
+            lastAction = "💥💥💥 SUPER TIRO!";
+            bullets = 0;
+            document.getElementById('extraOptions').innerHTML = "";
+            atualizarStatus();
+        }
+
+        function tiroMultiplo() {
+            lastAction = "🔫🔫🔫 TIRO MÚLTIPLO!";
+            bullets = 0;
+            document.getElementById('extraOptions').innerHTML = "";
+            atualizarStatus();
+        }
+
+        function defender() {
+            lastAction = "🛡️ DEFENDEU!";
+            document.getElementById('extraOptions').innerHTML = "";
+            atualizarStatus();
+        }
+
+        function perderHP(valor) {
+            playerHP -= valor;
+            if (playerHP < 0) playerHP = 0;
+            lastAction = `💔 PERDEU ${valor} HP!`;
+            atualizarStatus();
+            if (playerHP <= 0) {
+                lastAction = "☠️ VOCÊ MORREU!";
+                document.getElementById('extraOptions').innerHTML = "";
+                atualizarStatus();
+            }
+        }
+
+        atualizarStatus();
+    </script>
+</body>
+</html>
